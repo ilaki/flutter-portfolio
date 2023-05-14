@@ -1,13 +1,37 @@
 version: v1.0
-name: Initial Pipeline
+name: Continuous Integration Pipeline
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu2004
+  containers:
+    - name: main
+      image: 'semaphoreci/android:30-flutter'
 blocks:
-  - name: 'Block #1'
+  - name: Setup
     task:
       jobs:
-        - name: 'Job #1'
+        - name: Install dependencies
           commands:
             - checkout
+            - flutter pub get
+    dependencies: []
+  - name: Lint
+    dependencies:
+      - Setup
+    task:
+      jobs:
+        - name: Format code
+          commands:
+            - flutter format --set-exit-if-changed .
+        - name: Analyze code
+          commands:
+            - flutter analyze
+  - name: Test
+    dependencies:
+      - Lint
+    task:
+      jobs:
+        - name: Test code
+          commands:
+            - flutter test test
